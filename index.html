@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroTycoon: Engine Designer</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --border-color: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-color: #38bdf8;
+      --accent-hover: #0284c7;
+      --success-color: #22c55e;
+      --danger-color: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 12px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Top Navigation / Dashboard Bar */
+    header {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .stats-container {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stat-value {
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: var(--accent-color);
+    }
+
+    .controls-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .speed-btn {
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+
+    .speed-btn.active {
+      background: var(--accent-color);
+      color: #000;
+    }
+
+    /* Grid Layout */
+    .game-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    @media (min-width: 768px) {
+      .game-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .full-width {
+        grid-column: span 2;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+      color: var(--accent-color);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Slider / Input Controls */
+    .control-group {
+      margin-bottom: 16px;
+    }
+
+    .control-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      background: var(--border-color);
+      border-radius: 3px;
+      outline: none;
+      accent-color: var(--accent-color);
+    }
+
+    .action-btn {
+      width: 100%;
+      background: var(--accent-color);
+      color: #0f172a;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .action-btn:hover {
+      background: var(--accent-hover);
+      color: #ffffff;
+    }
+
+    /* Data Display Lists */
+    .readout-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .readout-box {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-color);
+      padding: 12px;
+      border-radius: 6px;
+    }
+
+    .readout-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .readout-value {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-top: 4px;
+    }
+
+    /* Table Styling for Catalog */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.85rem;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      color: var(--text-muted);
+      font-weight: normal;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    .badge-testing { background: #eab308; color: #000; }
+    .badge-certified { background: var(--success-color); color: #000; }
+  </style>
+</head>
+<body>
+
+  <!-- TOP HEADER / DASHBOARD BAR -->
+  <header>
+    <div class="stats-container">
+      <div class="stat-item">
+        <span class="stat-label">Capital</span>
+        <span class="stat-value" id="cash-display">$10,000,000</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Date</span>
+        <span class="stat-value" id="date-display">Y1 - M1 - D1</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Research Points</span>
+        <span class="stat-value" id="rp-display">150 RP</span>
+      </div>
+    </div>
+
+    <!-- GAME SPEED CONTROLS -->
+    <div class="controls-container">
+      <button class="speed-btn" onclick="setSpeed(0)">⏸</button>
+      <button class="speed-btn active" id="spd-1" onclick="setSpeed(1)">1x</button>
+      <button class="speed-btn" id="spd-2" onclick="setSpeed(2)">2x</button>
+      <button class="speed-btn" id="spd-5" onclick="setSpeed(5)">5x</button>
+    </div>
+  </header>
+
+  <!-- MAIN INTERFACE GRID -->
+  <div class="game-grid">
+    
+    <!-- ENGINE PARAMETER CONFIGURATOR -->
+    <div class="card">
+      <div class="card-title">
+        <span>Engine CAD Parameters</span>
+      </div>
+
+      <div class="control-group">
+        <div class="control-header">
+          <span>Engine Name</span>
+        </div>
+        <input type="text" id="engine-name" value="AE-100 Turbofan" style="width: 100%; padding: 8px; background: #0f172a; border: 1px solid var(--border-color); color: #fff; border-radius: 4px;">
+      </div>
+
+      <div class="control-group">
+        <div class="control-header">
+          <span>Bypass Ratio (BPR)</span>
+          <span id="val-bpr">5.0</span>
+        </div>
+        <input type="range" id="input-bpr" min="0" max="12" step="0.1" value="5.0" oninput="updateCalculations()">
+      </div>
+
+      <div class="control-group">
+        <div class="control-header">
+          <span>Overall Pressure Ratio (OPR)</span>
+          <span id="val-opr">30:1</span>
+        </div>
+        <input type="range" id="input-opr" min="10" max="50" step="1" value="30" oninput="updateCalculations()">
+      </div>
+
+      <div class="control-group">
+        <div class="control-header">
+          <span>Turbine Entry Temp (TET)</span>
+          <span id="val-tet">1400 K</span>
+        </div>
+        <input type="range" id="input-tet" min="1100" max="1800" step="10" value="1400" oninput="updateCalculations()">
+      </div>
+
+      <div class="control-group">
+        <div class="control-header">
+          <span>Fan Diameter</span>
+          <span id="val-dia">2.0 m</span>
+        </div>
+        <input type="range" id="input-dia" min="0.8" max="3.5" step="0.1" value="2.0" oninput="updateCalculations()">
+      </div>
+    </div>
+
+    <!-- LIVE DETERMINISTIC READOUTS -->
+    <div class="card">
+      <div class="card-title">
+        <span>Simulated Performance Specs</span>
+      </div>
+
+      <div class="readout-grid">
+        <div class="readout-box">
+          <div class="readout-label">Max Thrust</div>
+          <div class="readout-value" id="out-thrust">0 kN</div>
+        </div>
+        <div class="readout-box">
+          <div class="readout-label">Fuel Consumption (SFC)</div>
+          <div class="readout-value" id="out-sfc">0 g/(kN·s)</div>
+        </div>
+        <div class="readout-box">
+          <div class="readout-label">Dry Weight</div>
+          <div class="readout-value" id="out-weight">0 kg</div>
+        </div>
+        <div class="readout-box">
+          <div class="readout-label">Estimated Reliability</div>
+          <div class="readout-value" id="out-rel">0%</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 16px;" class="readout-box">
+        <div class="readout-label">Development & Testing Cost</div>
+        <div class="readout-value" id="out-cost">$0</div>
+      </div>
+
+      <button class="action-btn" onclick="startDevelopment()">Commence Prototype Testing</button>
+    </div>
+
+    <!-- ENGINE CATALOG & ACTIVE PROJECTS -->
+    <div class="card full-width">
+      <div class="card-title">
+        <span>Engine Portfolio & Certification Queue</span>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Engine Name</th>
+              <th>Thrust</th>
+              <th>SFC</th>
+              <th>Weight</th>
+              <th>Reliability</th>
+              <th>Status</th>
+              <th>Progress</th>
+            </tr>
+          </thead>
+          <tbody id="catalog-body">
+            <!-- Dynamic Injection -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // --- GAME STATE STORE ---
+    const gameState = {
+      cash: 10000000,
+      rp: 150,
+      daysPassed: 0,
+      speed: 1,
+      unlockedTech: {
+        compositeMaterials: false,
+        singleCrystalTurbines: false
+      },
+      catalog: []
+    };
+
+    // --- DETERMINISTIC SIMULATION ENGINE ---
+    function calculatePerformance(bpr, opr, tet, diameter) {
+      // Thrust (kN) scales with diameter, TET, and OPR
+      const maxThrust = (Math.pow(diameter, 1.8) * (tet / 1000) * (1 + opr / 100)) * 15;
+
+      // Specific Fuel Consumption (g/(kN·s)) - BPR and OPR optimize fuel burn
+      const sfc = (35 / (1 + bpr * 0.25)) * Math.pow(40 / opr, 0.3) * (tet / 1400);
+
+      // Dry Weight (kg) - larger fan area and pressure ratio add mass
+      const matFactor = gameState.unlockedTech.compositeMaterials ? 0.82 : 1.0;
+      const weight = (Math.PI * Math.pow(diameter / 2, 2) * 800 + (opr * 25)) * matFactor;
+
+      // Reliability (%) drops steeply if TET exceeds safe limits
+      const maxSafeTET = gameState.unlockedTech.singleCrystalTurbines ? 1750 : 1450;
+      const thermalStress = Math.max(0, tet - maxSafeTET);
+      const baseReliability = Math.max(10, 98 - Math.pow(thermalStress / 25, 1.8));
+
+      // Development Cost ($)
+      const devCost = (Math.pow(tet, 2) + Math.pow(opr, 2) * 500 + Math.pow(bpr, 2) * 1000) * 10;
+
+      return {
+        thrust: Math.round(maxThrust),
+        sfc: parseFloat(sfc.toFixed(2)),
+        weight: Math.round(weight),
+        reliability: Math.round(baseReliability),
+        devCost: Math.round(devCost)
+      };
+    }
+
+    // --- UI READOUT UPDATER ---
+    function updateCalculations() {
+      const bpr = parseFloat(document.getElementById('input-bpr').value);
+      const opr = parseFloat(document.getElementById('input-opr').value);
+      const tet = parseFloat(document.getElementById('input-tet').value);
+      const dia = parseFloat(document.getElementById('input-dia').value);
+
+      // Update text indicators
+      document.getElementById('val-bpr').innerText = bpr.toFixed(1);
+      document.getElementById('val-opr').innerText = opr + ":1";
+      document.getElementById('val-tet').innerText = tet + " K";
+      document.getElementById('val-dia').innerText = dia.toFixed(1) + " m";
+
+      // Compute physical formulas
+      const stats = calculatePerformance(bpr, opr, tet, dia);
+
+      // Render outputs
+      document.getElementById('out-thrust').innerText = stats.thrust.toLocaleString() + " kN";
+      document.getElementById('out-sfc').innerText = stats.sfc + " g/(kN·s)";
+      document.getElementById('out-weight').innerText = stats.weight.toLocaleString() + " kg";
+      document.getElementById('out-rel').innerText = stats.reliability + "%";
+      document.getElementById('out-cost').innerText = "$" + stats.devCost.toLocaleString();
+    }
+
+    // --- DEVELOPMENT & TESTING TRIGGER ---
+    function startDevelopment() {
+      const bpr = parseFloat(document.getElementById('input-bpr').value);
+      const opr = parseFloat(document.getElementById('input-opr').value);
+      const tet = parseFloat(document.getElementById('input-tet').value);
+      const dia = parseFloat(document.getElementById('input-dia').value);
+      const name = document.getElementById('engine-name').value || "Unnamed Engine";
+
+      const stats = calculatePerformance(bpr, opr, tet, dia);
+
+      if (gameState.cash < stats.devCost) {
+        alert("Insufficient capital to initiate prototype development!");
+        return;
+      }
+
+      gameState.cash -= stats.devCost;
+
+      // Add to catalog queue
+      gameState.catalog.push({
+        id: Date.now(),
+        name: name,
+        thrust: stats.thrust,
+        sfc: stats.sfc,
+        weight: stats.weight,
+        reliability: stats.reliability,
+        status: "Testing",
+        progress: 0,
+        totalTicks: 30 // Days required to certify
+      });
+
+      renderCatalog();
+    }
+
+    // --- GAME LOOP & TICK SYSTEM ---
+    function setSpeed(speed) {
+      gameState.speed = speed;
+      document.querySelectorAll('.speed-btn').forEach(btn => btn.classList.remove('active'));
+      if (speed > 0) {
+        const btn = document.getElementById('spd-' + speed);
+        if (btn) btn.classList.add('active');
+      }
+    }
+
+    function gameTick() {
+      if (gameState.speed === 0) return;
+
+      for (let i = 0; i < gameState.speed; i++) {
+        gameState.daysPassed++;
+
+        // Process active certification testing
+        gameState.catalog.forEach(item => {
+          if (item.status === "Testing") {
+            item.progress++;
+            if (item.progress >= item.totalTicks) {
+              item.status = "Certified";
+            }
+          }
+        });
+      }
+
+      renderDashboard();
+      renderCatalog();
+    }
+
+    // --- RENDER FUNCTIONS ---
+    function renderDashboard() {
+      document.getElementById('cash-display').innerText = "$" + gameState.cash.toLocaleString();
+      
+      const year = Math.floor(gameState.daysPassed / 360) + 1;
+      const month = Math.floor((gameState.daysPassed % 360) / 30) + 1;
+      const day = (gameState.daysPassed % 30) + 1;
+      document.getElementById('date-display').innerText = `Y${year} - M${month} - D${day}`;
+    }
+
+    function renderCatalog() {
+      const tbody = document.getElementById('catalog-body');
+      tbody.innerHTML = "";
+
+      if (gameState.catalog.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No engines designed yet. Create your first prototype above.</td></tr>`;
+        return;
+      }
+
+      gameState.catalog.forEach(item => {
+        const tr = document.createElement('tr');
+        const isCert = item.status === "Certified";
+        const badgeClass = isCert ? "badge-certified" : "badge-testing";
+        const progressDisplay = isCert ? "100%" : Math.round((item.progress / item.totalTicks) * 100) + "%";
+
+        tr.innerHTML = `
+          <td><strong>${item.name}</strong></td>
+          <td>${item.thrust.toLocaleString()} kN</td>
+          <td>${item.sfc}</td>
+          <td>${item.weight.toLocaleString()} kg</td>
+          <td>${item.reliability}%</td>
+          <td><span class="badge ${badgeClass}">${item.status}</span></td>
+          <td>${progressDisplay}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // --- INIT ---
+    updateCalculations();
+    renderDashboard();
+    renderCatalog();
+
+    // Run game tick every 1000ms (1 second)
+    setInterval(gameTick, 1000);
+  </script>
+</body>
+</html>
