@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>AeroTycoon: Engine Designer</title>
   <style>
     :root {
@@ -15,41 +15,40 @@
       --accent-hover: #0284c7;
       --success-color: #22c55e;
       --danger-color: #ef4444;
+      --warning-color: #eab308;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
       background-color: var(--bg-color);
       color: var(--text-main);
-      padding: 12px;
-      max-width: 1200px;
-      margin: 0 auto;
+      padding-bottom: 70px; /* Space for bottom navbar */
     }
 
-    /* Top Navigation / Dashboard Bar */
+    /* Top Sticky Dashboard Header */
     header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
       background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 14px;
       display: flex;
-      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
 
     .stats-container {
       display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
+      gap: 12px;
     }
 
     .stat-item {
@@ -58,33 +57,30 @@
     }
 
     .stat-label {
-      font-size: 0.75rem;
+      font-size: 0.65rem;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
     }
 
     .stat-value {
-      font-size: 1.25rem;
+      font-size: 0.95rem;
       font-weight: bold;
       color: var(--accent-color);
     }
 
     .controls-container {
       display: flex;
-      align-items: center;
-      gap: 8px;
+      gap: 4px;
     }
 
     .speed-btn {
       background: #0f172a;
       border: 1px solid var(--border-color);
       color: var(--text-main);
-      padding: 6px 12px;
+      padding: 6px 10px;
       border-radius: 4px;
-      cursor: pointer;
       font-weight: bold;
-      transition: all 0.2s;
+      font-size: 0.8rem;
     }
 
     .speed-btn.active {
@@ -92,57 +88,107 @@
       color: #000;
     }
 
-    /* Grid Layout */
-    .game-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 16px;
+    /* Tab Management */
+    .tab-content {
+      display: none;
+      padding: 12px;
+      max-width: 800px;
+      margin: 0 auto;
     }
 
-    @media (min-width: 768px) {
-      .game-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-      .full-width {
-        grid-column: span 2;
-      }
+    .tab-content.active {
+      display: block;
     }
 
+    /* Bottom Mobile Navigation Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: var(--card-bg);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 0.75rem;
+      width: 33%;
+    }
+
+    .nav-btn.active {
+      color: var(--accent-color);
+      font-weight: bold;
+    }
+
+    .nav-icon {
+      font-size: 1.2rem;
+    }
+
+    /* UI Cards & Containers */
     .card {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      padding: 20px;
+      padding: 14px;
+      margin-bottom: 12px;
     }
 
     .card-title {
-      font-size: 1.1rem;
-      margin-bottom: 16px;
+      font-size: 1rem;
+      margin-bottom: 12px;
       border-bottom: 1px solid var(--border-color);
-      padding-bottom: 8px;
+      padding-bottom: 6px;
       color: var(--accent-color);
       display: flex;
       justify-content: space-between;
     }
 
-    /* Slider / Input Controls */
+    /* 2D Canvas Container */
+    .canvas-container {
+      width: 100%;
+      background: #050b14;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 8px;
+      margin-bottom: 12px;
+    }
+
+    canvas {
+      width: 100%;
+      max-width: 400px;
+      height: 160px;
+    }
+
+    /* Sliders & Inputs */
     .control-group {
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     .control-header {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 6px;
-      font-size: 0.9rem;
+      margin-bottom: 4px;
+      font-size: 0.85rem;
     }
 
     input[type="range"] {
       width: 100%;
-      height: 6px;
-      background: var(--border-color);
-      border-radius: 3px;
-      outline: none;
+      height: 24px; /* Larger touch target */
       accent-color: var(--accent-color);
     }
 
@@ -151,95 +197,91 @@
       background: var(--accent-color);
       color: #0f172a;
       border: none;
-      padding: 12px;
+      padding: 14px;
       border-radius: 6px;
       font-weight: bold;
       font-size: 1rem;
-      cursor: pointer;
       margin-top: 8px;
     }
 
-    .action-btn:hover {
-      background: var(--accent-hover);
-      color: #ffffff;
-    }
-
-    /* Data Display Lists */
     .readout-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 8px;
     }
 
     .readout-box {
       background: rgba(15, 23, 42, 0.6);
       border: 1px solid var(--border-color);
-      padding: 12px;
+      padding: 8px 10px;
       border-radius: 6px;
     }
 
     .readout-label {
-      font-size: 0.8rem;
+      font-size: 0.7rem;
       color: var(--text-muted);
     }
 
     .readout-value {
-      font-size: 1.1rem;
+      font-size: 0.95rem;
       font-weight: bold;
-      margin-top: 4px;
+      margin-top: 2px;
     }
 
-    /* Table Styling for Catalog */
+    /* Finance Ledger Styling */
+    .finance-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .ledger-list {
+      list-style: none;
+      font-size: 0.8rem;
+    }
+
+    .ledger-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .amount-neg { color: var(--danger-color); }
+    .amount-pos { color: var(--success-color); }
+
+    /* Tables */
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
-      font-size: 0.85rem;
+      font-size: 0.75rem;
     }
 
     th, td {
-      padding: 10px;
+      padding: 8px 4px;
       text-align: left;
       border-bottom: 1px solid var(--border-color);
     }
 
-    th {
-      color: var(--text-muted);
-      font-weight: normal;
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 0.75rem;
-      font-weight: bold;
-    }
-
-    .badge-testing { background: #eab308; color: #000; }
-    .badge-certified { background: var(--success-color); color: #000; }
+    th { color: var(--text-muted); }
   </style>
 </head>
 <body>
 
-  <!-- TOP HEADER / DASHBOARD BAR -->
+  <!-- TOP HEADER -->
   <header>
     <div class="stats-container">
       <div class="stat-item">
         <span class="stat-label">Capital</span>
-        <span class="stat-value" id="cash-display">$10,000,000</span>
+        <span class="stat-value" id="cash-display">$50.0M</span>
       </div>
       <div class="stat-item">
         <span class="stat-label">Date</span>
-        <span class="stat-value" id="date-display">Y1 - M1 - D1</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Research Points</span>
-        <span class="stat-value" id="rp-display">150 RP</span>
+        <span class="stat-value" id="date-display">Y1 M1 D1</span>
       </div>
     </div>
 
-    <!-- GAME SPEED CONTROLS -->
     <div class="controls-container">
       <button class="speed-btn" onclick="setSpeed(0)">⏸</button>
       <button class="speed-btn active" id="spd-1" onclick="setSpeed(1)">1x</button>
@@ -248,149 +290,159 @@
     </div>
   </header>
 
-  <!-- MAIN INTERFACE GRID -->
-  <div class="game-grid">
-    
-    <!-- ENGINE PARAMETER CONFIGURATOR -->
+  <!-- TAB 1: ENGINE DESIGNER -->
+  <div id="tab-designer" class="tab-content active">
+    <!-- 2D DIAGRAM CANVAS -->
     <div class="card">
       <div class="card-title">
-        <span>Engine CAD Parameters</span>
+        <span>Schematic CAD View</span>
+        <span style="font-size:0.75rem; color:var(--text-muted);" id="engine-type-tag">High-Bypass Turbofan</span>
+      </div>
+      <div class="canvas-container">
+        <canvas id="engineCanvas" width="400" height="160"></canvas>
+      </div>
+    </div>
+
+    <!-- PARAMETER INPUTS -->
+    <div class="card">
+      <div class="card-title"><span>Design Parameters</span></div>
+      
+      <div class="control-group">
+        <div class="control-header"><span>Engine Name</span></div>
+        <input type="text" id="engine-name" value="AE-100 Turbofan" style="width:100%; padding:8px; background:#0f172a; border:1px solid var(--border-color); color:#fff; border-radius:4px; font-size:0.9rem;">
       </div>
 
       <div class="control-group">
-        <div class="control-header">
-          <span>Engine Name</span>
-        </div>
-        <input type="text" id="engine-name" value="AE-100 Turbofan" style="width: 100%; padding: 8px; background: #0f172a; border: 1px solid var(--border-color); color: #fff; border-radius: 4px;">
-      </div>
-
-      <div class="control-group">
-        <div class="control-header">
-          <span>Bypass Ratio (BPR)</span>
-          <span id="val-bpr">5.0</span>
-        </div>
+        <div class="control-header"><span>Bypass Ratio (BPR)</span><span id="val-bpr">5.0</span></div>
         <input type="range" id="input-bpr" min="0" max="12" step="0.1" value="5.0" oninput="updateCalculations()">
       </div>
 
       <div class="control-group">
-        <div class="control-header">
-          <span>Overall Pressure Ratio (OPR)</span>
-          <span id="val-opr">30:1</span>
-        </div>
+        <div class="control-header"><span>Overall Pressure Ratio (OPR)</span><span id="val-opr">30:1</span></div>
         <input type="range" id="input-opr" min="10" max="50" step="1" value="30" oninput="updateCalculations()">
       </div>
 
       <div class="control-group">
-        <div class="control-header">
-          <span>Turbine Entry Temp (TET)</span>
-          <span id="val-tet">1400 K</span>
-        </div>
+        <div class="control-header"><span>Turbine Temp (TET)</span><span id="val-tet">1400 K</span></div>
         <input type="range" id="input-tet" min="1100" max="1800" step="10" value="1400" oninput="updateCalculations()">
       </div>
 
       <div class="control-group">
-        <div class="control-header">
-          <span>Fan Diameter</span>
-          <span id="val-dia">2.0 m</span>
-        </div>
+        <div class="control-header"><span>Fan Diameter</span><span id="val-dia">2.0 m</span></div>
         <input type="range" id="input-dia" min="0.8" max="3.5" step="0.1" value="2.0" oninput="updateCalculations()">
       </div>
     </div>
 
-    <!-- LIVE DETERMINISTIC READOUTS -->
+    <!-- READOUTS & ACTION -->
     <div class="card">
-      <div class="card-title">
-        <span>Simulated Performance Specs</span>
-      </div>
-
+      <div class="card-title"><span>Performance & Cost</span></div>
       <div class="readout-grid">
-        <div class="readout-box">
-          <div class="readout-label">Max Thrust</div>
-          <div class="readout-value" id="out-thrust">0 kN</div>
-        </div>
-        <div class="readout-box">
-          <div class="readout-label">Fuel Consumption (SFC)</div>
-          <div class="readout-value" id="out-sfc">0 g/(kN·s)</div>
-        </div>
-        <div class="readout-box">
-          <div class="readout-label">Dry Weight</div>
-          <div class="readout-value" id="out-weight">0 kg</div>
-        </div>
-        <div class="readout-box">
-          <div class="readout-label">Estimated Reliability</div>
-          <div class="readout-value" id="out-rel">0%</div>
-        </div>
+        <div class="readout-box"><div class="readout-label">Max Thrust</div><div class="readout-value" id="out-thrust">0 kN</div></div>
+        <div class="readout-box"><div class="readout-label">Fuel Burn (SFC)</div><div class="readout-value" id="out-sfc">0</div></div>
+        <div class="readout-box"><div class="readout-label">Dry Weight</div><div class="readout-value" id="out-weight">0 kg</div></div>
+        <div class="readout-box"><div class="readout-label">Reliability</div><div class="readout-value" id="out-rel">0%</div></div>
       </div>
-
-      <div style="margin-top: 16px;" class="readout-box">
-        <div class="readout-label">Development & Testing Cost</div>
-        <div class="readout-value" id="out-cost">$0</div>
+      <div style="margin-top:8px;" class="readout-box">
+        <div class="readout-label">R&D Cost</div>
+        <div class="readout-value" id="out-cost" style="color:var(--warning-color);">$0</div>
       </div>
-
-      <button class="action-btn" onclick="startDevelopment()">Commence Prototype Testing</button>
+      <button class="action-btn" onclick="startDevelopment()">Start Prototype R&D</button>
     </div>
+  </div>
 
-    <!-- ENGINE CATALOG & ACTIVE PROJECTS -->
-    <div class="card full-width">
-      <div class="card-title">
-        <span>Engine Portfolio & Certification Queue</span>
-      </div>
-
+  <!-- TAB 2: PORTFOLIO / CATALOG -->
+  <div id="tab-portfolio" class="tab-content">
+    <div class="card">
+      <div class="card-title"><span>Engine Portfolio & Testing</span></div>
       <div style="overflow-x: auto;">
         <table>
           <thead>
             <tr>
-              <th>Engine Name</th>
+              <th>Name</th>
               <th>Thrust</th>
               <th>SFC</th>
-              <th>Weight</th>
-              <th>Reliability</th>
+              <th>Rel.</th>
               <th>Status</th>
               <th>Progress</th>
             </tr>
           </thead>
-          <tbody id="catalog-body">
-            <!-- Dynamic Injection -->
-          </tbody>
+          <tbody id="catalog-body"></tbody>
         </table>
       </div>
     </div>
-
   </div>
+
+  <!-- TAB 3: FINANCES -->
+  <div id="tab-finances" class="tab-content">
+    <div class="card">
+      <div class="card-title"><span>Financial Overview</span></div>
+      <div class="finance-summary">
+        <div class="readout-box">
+          <div class="readout-label">Total R&D Spent</div>
+          <div class="readout-value amount-neg" id="fin-rd">$0</div>
+        </div>
+        <div class="readout-box">
+          <div class="readout-label">B2B Engine Revenue</div>
+          <div class="readout-value amount-pos" id="fin-rev">$0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>Transaction Ledger</span></div>
+      <ul class="ledger-list" id="ledger-body">
+        <!-- Dynamic ledger items -->
+      </ul>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAVIGATION BAR -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="nav-designer" onclick="switchTab('designer')">
+      <span class="nav-icon">🛠</span>
+      <span>Designer</span>
+    </button>
+    <button class="nav-btn" id="nav-portfolio" onclick="switchTab('portfolio')">
+      <span class="nav-icon">📦</span>
+      <span>Portfolio</span>
+    </button>
+    <button class="nav-btn" id="nav-finances" onclick="switchTab('finances')">
+      <span class="nav-icon">💵</span>
+      <span>Finances</span>
+    </button>
+  </nav>
 
   <script>
     // --- GAME STATE STORE ---
     const gameState = {
-      cash: 10000000,
-      rp: 150,
+      cash: 50000000, // Rebalanced starting capital: $50 Million
       daysPassed: 0,
       speed: 1,
-      unlockedTech: {
-        compositeMaterials: false,
-        singleCrystalTurbines: false
-      },
+      totalRDSpent: 0,
+      totalRevenue: 0,
+      ledger: [],
       catalog: []
     };
 
-    // --- DETERMINISTIC SIMULATION ENGINE ---
+    // --- TAB NAVIGATION ---
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById('tab-' + tabId).classList.add('active');
+      document.getElementById('nav-' + tabId).classList.add('active');
+    }
+
+    // --- FORMULA ENGINE ---
     function calculatePerformance(bpr, opr, tet, diameter) {
-      // Thrust (kN) scales with diameter, TET, and OPR
-      const maxThrust = (Math.pow(diameter, 1.8) * (tet / 1000) * (1 + opr / 100)) * 15;
-
-      // Specific Fuel Consumption (g/(kN·s)) - BPR and OPR optimize fuel burn
+      const maxThrust = (Math.pow(diameter, 1.8) * (tet / 1000) * (1 + opr / 100)) * 14;
       const sfc = (35 / (1 + bpr * 0.25)) * Math.pow(40 / opr, 0.3) * (tet / 1400);
-
-      // Dry Weight (kg) - larger fan area and pressure ratio add mass
-      const matFactor = gameState.unlockedTech.compositeMaterials ? 0.82 : 1.0;
-      const weight = (Math.PI * Math.pow(diameter / 2, 2) * 800 + (opr * 25)) * matFactor;
-
-      // Reliability (%) drops steeply if TET exceeds safe limits
-      const maxSafeTET = gameState.unlockedTech.singleCrystalTurbines ? 1750 : 1450;
-      const thermalStress = Math.max(0, tet - maxSafeTET);
+      const weight = (Math.PI * Math.pow(diameter / 2, 2) * 750 + (opr * 20));
+      const thermalStress = Math.max(0, tet - 1450);
       const baseReliability = Math.max(10, 98 - Math.pow(thermalStress / 25, 1.8));
-
-      // Development Cost ($)
-      const devCost = (Math.pow(tet, 2) + Math.pow(opr, 2) * 500 + Math.pow(bpr, 2) * 1000) * 10;
+      
+      // Adjusted lower R&D cost formula so early game isn't softlocked
+      const devCost = (Math.pow(tet, 1.6) + Math.pow(opr, 1.8) * 200 + Math.pow(bpr, 1.5) * 500) * 1.5;
 
       return {
         thrust: Math.round(maxThrust),
@@ -401,6 +453,63 @@
       };
     }
 
+    // --- 2D CANVAS ENGINE GRAPHIC ---
+    function drawEngine2D(bpr, opr, tet, diameter) {
+      const canvas = document.getElementById('engineCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+
+      // Scale visual components according to input specs
+      const fanH = Math.min(130, 40 + diameter * 25);
+      const coreH = Math.max(20, fanH / (1 + bpr * 0.4));
+      const length = 260;
+      const startX = cx - length / 2;
+
+      // Outer Nacelle (Bypass Duct)
+      ctx.fillStyle = "#334155";
+      ctx.beginPath();
+      ctx.moveTo(startX, cy - fanH/2);
+      ctx.lineTo(startX + length, cy - fanH/2 + 10);
+      ctx.lineTo(startX + length, cy + fanH/2 - 10);
+      ctx.lineTo(startX, cy + fanH/2);
+      ctx.closePath();
+      ctx.fill();
+
+      // Bypass Air Flow Channel (Blue)
+      ctx.fillStyle = "rgba(56, 189, 248, 0.2)";
+      ctx.fillRect(startX + 20, cy - fanH/2 + 4, length - 30, fanH/2 - coreH/2 - 4);
+      ctx.fillRect(startX + 20, cy + coreH/2, length - 30, fanH/2 - coreH/2 - 4);
+
+      // Core Engine Body (Compressor/Combustor/Turbine)
+      ctx.fillStyle = "#1e293b";
+      ctx.strokeStyle = "#475569";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(startX + 30, cy - coreH/2);
+      ctx.lineTo(startX + length - 20, cy - coreH/4);
+      ctx.lineTo(startX + length - 20, cy + coreH/4);
+      ctx.lineTo(startX + 30, cy + coreH/2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // High Temp Combustion Zone (Glows hotter based on TET slider)
+      const heatIntensity = Math.min(1, (tet - 1100) / 700);
+      ctx.fillStyle = `rgba(239, 68, 68, ${0.3 + heatIntensity * 0.6})`;
+      ctx.fillRect(startX + 110, cy - coreH/3, 50, coreH/1.5);
+
+      // Fan Blades at Inlet
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillRect(startX + 10, cy - fanH/2 + 6, 12, fanH - 12);
+      
+      // Shaft
+      ctx.fillStyle = "#64748b";
+      ctx.fillRect(startX + 10, cy - 3, length - 40, 6);
+    }
+
     // --- UI READOUT UPDATER ---
     function updateCalculations() {
       const bpr = parseFloat(document.getElementById('input-bpr').value);
@@ -408,24 +517,26 @@
       const tet = parseFloat(document.getElementById('input-tet').value);
       const dia = parseFloat(document.getElementById('input-dia').value);
 
-      // Update text indicators
       document.getElementById('val-bpr').innerText = bpr.toFixed(1);
       document.getElementById('val-opr').innerText = opr + ":1";
       document.getElementById('val-tet').innerText = tet + " K";
       document.getElementById('val-dia').innerText = dia.toFixed(1) + " m";
 
-      // Compute physical formulas
       const stats = calculatePerformance(bpr, opr, tet, dia);
 
-      // Render outputs
       document.getElementById('out-thrust').innerText = stats.thrust.toLocaleString() + " kN";
-      document.getElementById('out-sfc').innerText = stats.sfc + " g/(kN·s)";
+      document.getElementById('out-sfc').innerText = stats.sfc;
       document.getElementById('out-weight').innerText = stats.weight.toLocaleString() + " kg";
       document.getElementById('out-rel').innerText = stats.reliability + "%";
       document.getElementById('out-cost').innerText = "$" + stats.devCost.toLocaleString();
+
+      document.getElementById('engine-type-tag').innerText = bpr < 1.0 ? "Turbojet" : (bpr > 6.0 ? "High-Bypass Turbofan" : "Turbofan");
+
+      // Update 2D graphics
+      drawEngine2D(bpr, opr, tet, dia);
     }
 
-    // --- DEVELOPMENT & TESTING TRIGGER ---
+    // --- DEVELOPMENT & LEDGER ---
     function startDevelopment() {
       const bpr = parseFloat(document.getElementById('input-bpr').value);
       const opr = parseFloat(document.getElementById('input-opr').value);
@@ -436,13 +547,20 @@
       const stats = calculatePerformance(bpr, opr, tet, dia);
 
       if (gameState.cash < stats.devCost) {
-        alert("Insufficient capital to initiate prototype development!");
+        alert("Insufficient capital to start R&D!");
         return;
       }
 
       gameState.cash -= stats.devCost;
+      gameState.totalRDSpent += stats.devCost;
 
-      // Add to catalog queue
+      // Log transaction
+      gameState.ledger.unshift({
+        desc: `R&D: ${name}`,
+        amount: -stats.devCost,
+        date: `Y${Math.floor(gameState.daysPassed / 360) + 1} M${Math.floor((gameState.daysPassed % 360) / 30) + 1}`
+      });
+
       gameState.catalog.push({
         id: Date.now(),
         name: name,
@@ -452,20 +570,20 @@
         reliability: stats.reliability,
         status: "Testing",
         progress: 0,
-        totalTicks: 30 // Days required to certify
+        totalTicks: 25
       });
 
+      renderDashboard();
       renderCatalog();
+      renderFinances();
+      switchTab('portfolio');
     }
 
-    // --- GAME LOOP & TICK SYSTEM ---
+    // --- GAME LOOP ---
     function setSpeed(speed) {
       gameState.speed = speed;
       document.querySelectorAll('.speed-btn').forEach(btn => btn.classList.remove('active'));
-      if (speed > 0) {
-        const btn = document.getElementById('spd-' + speed);
-        if (btn) btn.classList.add('active');
-      }
+      if (speed > 0) document.getElementById('spd-' + speed).classList.add('active');
     }
 
     function gameTick() {
@@ -474,12 +592,15 @@
       for (let i = 0; i < gameState.speed; i++) {
         gameState.daysPassed++;
 
-        // Process active certification testing
         gameState.catalog.forEach(item => {
           if (item.status === "Testing") {
             item.progress++;
             if (item.progress >= item.totalTicks) {
               item.status = "Certified";
+              // Certified engines start yielding small B2B licencing royalties
+              const royalty = Math.round(item.thrust * 15);
+              gameState.cash += royalty;
+              gameState.totalRevenue += royalty;
             }
           }
         });
@@ -489,14 +610,13 @@
       renderCatalog();
     }
 
-    // --- RENDER FUNCTIONS ---
+    // --- RENDERING HELPERS ---
     function renderDashboard() {
-      document.getElementById('cash-display').innerText = "$" + gameState.cash.toLocaleString();
-      
+      document.getElementById('cash-display').innerText = "$" + (gameState.cash / 1000000).toFixed(2) + "M";
       const year = Math.floor(gameState.daysPassed / 360) + 1;
       const month = Math.floor((gameState.daysPassed % 360) / 30) + 1;
       const day = (gameState.daysPassed % 30) + 1;
-      document.getElementById('date-display').innerText = `Y${year} - M${month} - D${day}`;
+      document.getElementById('date-display').innerText = `Y${year} M${month} D${day}`;
     }
 
     function renderCatalog() {
@@ -504,35 +624,52 @@
       tbody.innerHTML = "";
 
       if (gameState.catalog.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No engines designed yet. Create your first prototype above.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No engines in catalog.</td></tr>`;
         return;
       }
 
       gameState.catalog.forEach(item => {
         const tr = document.createElement('tr');
         const isCert = item.status === "Certified";
-        const badgeClass = isCert ? "badge-certified" : "badge-testing";
         const progressDisplay = isCert ? "100%" : Math.round((item.progress / item.totalTicks) * 100) + "%";
 
         tr.innerHTML = `
           <td><strong>${item.name}</strong></td>
-          <td>${item.thrust.toLocaleString()} kN</td>
+          <td>${item.thrust} kN</td>
           <td>${item.sfc}</td>
-          <td>${item.weight.toLocaleString()} kg</td>
           <td>${item.reliability}%</td>
-          <td><span class="badge ${badgeClass}">${item.status}</span></td>
+          <td style="color:${isCert ? 'var(--success-color)' : 'var(--warning-color)'}">${item.status}</td>
           <td>${progressDisplay}</td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    // --- INIT ---
+    function renderFinances() {
+      document.getElementById('fin-rd').innerText = "-$" + gameState.totalRDSpent.toLocaleString();
+      document.getElementById('fin-rev').innerText = "+$" + gameState.totalRevenue.toLocaleString();
+
+      const ledgerBody = document.getElementById('ledger-body');
+      ledgerBody.innerHTML = "";
+
+      gameState.ledger.forEach(item => {
+        const li = document.createElement('li');
+        li.className = "ledger-item";
+        li.innerHTML = `
+          <span>${item.desc} (${item.date})</span>
+          <span class="${item.amount < 0 ? 'amount-neg' : 'amount-pos'}">
+            ${item.amount < 0 ? '-' : '+'}$${Math.abs(item.amount).toLocaleString()}
+          </span>
+        `;
+        ledgerBody.appendChild(li);
+      });
+    }
+
+    // Initialize
     updateCalculations();
     renderDashboard();
     renderCatalog();
-
-    // Run game tick every 1000ms (1 second)
+    renderFinances();
     setInterval(gameTick, 1000);
   </script>
 </body>
